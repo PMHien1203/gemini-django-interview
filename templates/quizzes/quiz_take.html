@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Question {{ current_index }} of {{ total_questions }} - {{ attempt.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-3" id="quiz-engine-container"
+     data-attempt-id="{{ attempt.id }}"
+     data-question-id="{{ current_question.id }}"
+     data-mode="{{ attempt.mode }}"
+     data-time-limit="{{ time_limit_sec }}"
+     data-save-url="{% url 'quizzes:save_answer' attempt.id %}"
+     data-submit-url="{% url 'quizzes:submit' attempt.id %}"
+     data-csrf="{{ csrf_token }}">
+
+  <!-- Top Bar: Progress & Timer -->
+  <div class="card-custom p-3 mb-4 shadow-sm">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <!-- Title & Question Counter -->
+      <div>
+        <h6 class="fw-bold mb-0 text-truncate" style="max-width: 450px;">{{ attempt.title }}</h6>
+        <small class="text-muted">
+          Question <span class="text-primary fw-bold">{{ current_index }}</span> of {{ total_questions }}
+          • Mode: <span class="badge bg-secondary-subtle text-light">{{ attempt.get_mode_display }}</span>
+        </small>
+      </div>
+
+      <!-- Center / Right: Timer & Palette Modal Trigger -->
+      <div class="d-flex align-items-center gap-2">
+        <!-- Palette modal trigger button -->
+        <button type="button" class="btn btn-outline-custom btn-sm px-3" data-bs-toggle="modal" data-bs-target="#paletteModal">
+          <i class="bi bi-grid-3x3-gap me-1"></i> Question Grid
+        </button>
+
+        <!-- Timer badge -->
+        <div id="quiz-timer-badge" class="badge bg-secondary p-2 px-3 fs-6 d-flex align-items-center gap-2 rounded-3">
+          <i class="bi bi-stopwatch-fill"></i>
+          <span id="quiz-timer-display" class="font-monospace fw-bold">--:--</span>
+        </div>
+
+        <!-- Submit Button Trigger -->
+        <button type="button" class="btn btn-outline-danger btn-sm px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+          Finish & Submit
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress mt-3" style="height: 6px;">
+      <div class="progress-bar-custom progress-bar" role="progressbar"
+           style="width: {% widthratio current_index total_questions 100 %}%;"
+           aria-valuenow="{{ current_index }}" aria-valuemin="1" aria-valuemax="{{ total_questions }}">
+      </div>
+    </div>
+  </div>
+
+  <div class="row gy-4">
+    <!-- Main Question Area (One question per screen) -->
+    <div class="col-lg-8">
+      <div class="card-custom p-4 p-sm-5 shadow-lg mb-4">
+        <!-- Meta badges -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div class="d-flex gap-2">
+            <span class="badge {% if current_question.topic.category.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %}">
+              {{ current_question.topic.category.technology }}
+            </span>
+            <span class="badge bg-secondary-subtle text-light">
+              {{ current_question.topic.name }}
+            </span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <span class="badge {% if current_question.difficulty == 'BEGINNER' %}badge-diff-beginner{% elif current_question.difficulty == 'INTERMEDIATE' %}badge-diff-intermediate{% else %}badge-diff-advanced{% endif %}">
+              {{ current_question.difficulty }}
+            </span>
+            <!-- Flag for Review Button -->
+            <button id="flag-question-btn" type="button"
+                    class="btn btn-sm {% if current_ua.is_flagged %}btn-warning{% else %}btn-outline-warning{% endif %} py-1 px-2"
+                    data-flagged="{{ current_ua.is_flagged|lower }}">
+              <i class="bi {% if current_ua.is_flagged %}bi-flag-fill{% else %}bi-flag{% endif %} me-1"></i>
+              {% if current_ua.is_flagged %}Flagged{% else %}Mark for Review{% endif %}
+            </button>
+          </div>
+        </div>
+
+        <!-- Question Content -->
+        <h4 class="fw-bold mb-4" style="line-height: 1.4;">{{ current_question.content }}</h4>
+
+        <!-- Code Snippet (if available) -->
+        {% if current_question.code_snippet %}
+        <div class="code-box mb-4">
+          {{ current_question.code_snippet }}
+        </div>
+        {% endif %}
+
+        <!-- Answer Options (4 choices, randomized) -->
+        <h6 class="text-muted small fw-bold mb-3">SELECT THE BEST ANSWER:</h6>
+        <div class="d-flex flex-column gap-2 mb-4">
+          {% for opt in options %}
+          <div class="quiz-option {% if current_ua.selected_option_id == opt.id %}selected{% endif %}"
+               data-option-id="{{ opt.id }}">
+            <input type="radio" name="selected_option" value="{{ opt.id }}" class="d-none"
+                   {% if current_ua.selected_option_id == opt.id %}checked{% endif %}>
+            <div class="option-badge">{{ forloop.counter }}</div>
+            <div class="w-100 fw-semibold">{{ opt.content }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Practice Mode Instant Feedback Box -->
+        {% if attempt.mode == 'PRACTICE' %}
+        <div class="mb-4">
+          <button id="practice-check-btn" type="button" class="btn btn-outline-primary btn-sm px-3">
+            <i class="bi bi-patch-check me-1"></i> Check Answer & Reveal Explanation
+          </button>
+        </div>
+
+        <div id="practice-explanation-card" class="alert alert-primary-subtle border-primary-subtle p-3 rounded-3 {% if not show_explanation %}d-none{% endif %}">
+          <h6 class="fw-bold text-primary mb-1"><i class="bi bi-info-circle-fill me-1"></i> Technical Explanation</h6>
+          <p id="practice-explanation-text" class="mb-0 small text-light" style="line-height: 1.6;">
+            {{ current_question.explanation }}
+          </p>
+        </div>
+        {% endif %}
+
+        <!-- Navigation Controls: Previous / Next -->
+        <div class="d-flex justify-content-between align-items-center pt-3 border-top border-secondary-subtle">
+          <div>
+            {% if has_prev %}
+            <a href="?q={{ prev_idx }}" class="btn btn-outline-custom px-4 py-2">
+              <i class="bi bi-chevron-left me-1"></i> Previous
+            </a>
+            {% else %}
+            <button class="btn btn-outline-custom px-4 py-2 disabled" disabled>
+              <i class="bi bi-chevron-left me-1"></i> Previous
+            </button>
+            {% endif %}
+          </div>
+
+          <div>
+            {% if has_next %}
+            <a href="?q={{ next_idx }}" class="btn btn-primary-custom px-4 py-2">
+              Next Question <i class="bi bi-chevron-right ms-1"></i>
+            </a>
+            {% else %}
+            <button type="button" class="btn btn-success px-4 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+              Review & Submit <i class="bi bi-check2-circle ms-1"></i>
+            </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Question Palette Quick Jump -->
+    <div class="col-lg-4">
+      <div class="card-custom p-4 shadow-sm sticky-top" style="top: 85px;">
+        <h6 class="fw-bold mb-3 d-flex justify-content-between align-items-center">
+          <span>Question Palette</span>
+          <span class="badge bg-secondary-subtle text-muted small">{{ total_questions }} Items</span>
+        </h6>
+
+        <!-- Palette Legend -->
+        <div class="d-flex flex-wrap gap-2 text-muted small mb-3 pb-2 border-bottom border-secondary-subtle">
+          <span><span class="palette-btn answered" style="width: 14px; height: 14px; display: inline-block;"></span> Answered</span>
+          <span><span class="palette-btn" style="width: 14px; height: 14px; display: inline-block;"></span> Unanswered</span>
+          <span><span class="palette-btn flagged" style="width: 14px; height: 14px; display: inline-block;"></span> Flagged</span>
+        </div>
+
+        <!-- Quick Jump Buttons -->
+        <div class="d-flex flex-wrap gap-1 mb-4" style="max-height: 250px; overflow-y: auto;">
+          {% for p in palette_data %}
+          <a href="?q={{ p.index }}"
+             class="palette-btn text-decoration-none {% if p.is_current %}active{% endif %} {% if p.is_answered %}answered{% endif %} {% if p.is_flagged %}flagged{% endif %}"
+             data-qid="{{ p.question_id }}">
+            {{ p.index }}
+          </a>
+          {% endfor %}
+        </div>
+
+        <div class="d-grid gap-2">
+          <button type="button" class="btn btn-primary-custom py-2 fw-semibold" data-bs-toggle="modal" data-bs-target="#submitConfirmModal">
+            <i class="bi bi-send-check me-1"></i> Submit Examination
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Question Palette Modal (for mobile or full view) -->
+<div class="modal fade" id="paletteModal" tabindex="-1" aria-labelledby="paletteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content card-custom">
+      <div class="modal-header border-secondary-subtle">
+        <h5 class="modal-title fw-bold" id="paletteModalLabel">Question Jump Grid</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex flex-wrap gap-2 justify-content-center">
+          {% for p in palette_data %}
+          <a href="?q={{ p.index }}"
+             class="palette-btn text-decoration-none {% if p.is_current %}active{% endif %} {% if p.is_answered %}answered{% endif %} {% if p.is_flagged %}flagged{% endif %}">
+            {{ p.index }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit Confirmation Modal -->
+<div class="modal fade" id="submitConfirmModal" tabindex="-1" aria-labelledby="submitModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content card-custom">
+      <div class="modal-header border-secondary-subtle">
+        <h5 class="modal-title fw-bold" id="submitModalLabel"><i class="bi bi-question-circle text-warning me-2"></i> Confirm Assessment Submission</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p class="mb-3">Are you sure you want to finish and submit your answers? Your score and detailed topic report will be generated immediately.</p>
+        <div class="alert alert-secondary-subtle border-0 small mb-0">
+          <strong>Notice:</strong> Once submitted, answers are final and cannot be modified.
+        </div>
+      </div>
+      <div class="modal-footer border-secondary-subtle">
+        <button type="button" class="btn btn-outline-custom" data-bs-dismiss="modal">Continue Assessment</button>
+        <button id="confirm-final-submit-btn" type="button" class="btn btn-success fw-bold px-4">
+          Yes, Submit Now
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{% static 'js/quiz.js' %}"></script>
+{% endblock %}

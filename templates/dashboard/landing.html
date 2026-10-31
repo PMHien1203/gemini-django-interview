@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Python & Django Interview Master - Ace Your Technical Interviews{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-5">
+  <!-- Hero Section -->
+  <section class="py-5 text-center text-lg-start">
+    <div class="row align-items-center gy-5">
+      <div class="col-lg-7">
+        <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-3 border border-primary-subtle bg-primary-subtle text-primary fw-semibold small">
+          <i class="bi bi-patch-check-fill"></i> Comprehensive Technical Preparation
+        </div>
+        <h1 class="display-4 fw-bold lh-sm mb-3">
+          Master <span class="text-primary" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Python & Django</span> Technical Interviews
+        </h1>
+        <p class="lead text-light mb-4" style="max-width: 650px;">
+          Practice over 240+ senior-vetted multiple-choice questions covering language internals, GIL, asyncio, OOP, Django ORM optimization, atomic transactions, middleware, and backend system design.
+        </p>
+
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start mb-4">
+          <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom btn-lg d-flex align-items-center gap-2 shadow">
+            <i class="bi bi-play-circle-fill fs-5"></i> Start Practicing
+          </a>
+          <form method="POST" action="{% url 'quizzes:start' %}" class="d-inline">
+            {% csrf_token %}
+            <input type="hidden" name="mode" value="MOCK_INTERVIEW">
+            <input type="hidden" name="question_count" value="20">
+            <input type="hidden" name="time_limit_mins" value="25">
+            <button type="submit" class="btn btn-outline-custom btn-lg d-flex align-items-center gap-2">
+              <i class="bi bi-briefcase-fill text-warning fs-5"></i> Full Mock Interview
+            </button>
+          </form>
+          {% if not user.is_authenticated %}
+          <a href="{% url 'accounts:demo_login' %}" class="btn btn-outline-warning btn-lg d-flex align-items-center gap-2">
+            <i class="bi bi-lightning-charge-fill fs-5"></i> One-Click Demo
+          </a>
+          {% endif %}
+        </div>
+
+        <div class="d-flex flex-wrap gap-4 pt-2 text-muted small justify-content-center justify-content-lg-start">
+          <div><i class="bi bi-check2-circle text-success me-1"></i> 240+ Verified Questions</div>
+          <div><i class="bi bi-check2-circle text-success me-1"></i> Beginner to Advanced</div>
+          <div><i class="bi bi-check2-circle text-success me-1"></i> In-Depth Technical Explanations</div>
+          <div><i class="bi bi-check2-circle text-success me-1"></i> SQLite Database Persisted</div>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card-custom p-4 shadow-lg position-relative overflow-hidden">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <span class="badge badge-tech-django px-2 py-1">Django 5.x ORM Drill</span>
+            <span class="badge badge-diff-advanced px-2 py-1">ADVANCED</span>
+          </div>
+          <h5 class="fw-bold mb-3">How does select_related() eliminate the N+1 queries problem?</h5>
+          <div class="code-box mb-3 small">
+# Eager loading single-valued foreign keys
+questions = Question.objects.select_related('topic')
+          </div>
+          <div class="d-flex flex-column gap-2 mb-3">
+            <div class="p-2 rounded border border-success bg-success-subtle text-success small fw-semibold">
+              <i class="bi bi-check-circle-fill me-1"></i> Performs an SQL JOIN in a single database round-trip
+            </div>
+            <div class="p-2 rounded border border-secondary-subtle bg-body-tertiary text-muted small">
+              <i class="bi bi-circle me-1"></i> Executes separate queries and joins in Python memory
+            </div>
+            <div class="p-2 rounded border border-secondary-subtle bg-body-tertiary text-muted small">
+              <i class="bi bi-circle me-1"></i> Caches the entire table in Redis
+            </div>
+          </div>
+          <div class="alert alert-success-subtle border-0 py-2 px-3 small rounded mb-0">
+            <strong>Key Takeaway:</strong> `select_related()` uses SQL JOINs for ForeignKeys, while `prefetch_related()` runs separate batch queries for ManyToMany relations.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Capabilities Stats -->
+  <section class="py-4">
+    <div class="row g-3">
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3 text-center">
+          <div class="text-primary fs-3 fw-bold">{{ total_questions|default:"240+" }}</div>
+          <div class="text-muted small fw-semibold">Total Interview Questions</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3 text-center">
+          <div class="text-info fs-3 fw-bold">{{ python_count|default:"120" }}</div>
+          <div class="text-muted small fw-semibold">Python Core & Advanced</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3 text-center">
+          <div class="text-success fs-3 fw-bold">{{ django_count|default:"120" }}</div>
+          <div class="text-muted small fw-semibold">Django & ORM Architecture</div>
+        </div>
+      </div>
+      <div class="col-sm-6 col-lg-3">
+        <div class="card-custom p-3 text-center">
+          <div class="text-warning fs-3 fw-bold">4 Modes</div>
+          <div class="text-muted small fw-semibold">Practice, Exam, Drill & Mock</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learning Paths Section -->
+  <section class="py-5">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold mb-2">Curated Interview Preparation Paths</h2>
+      <p class="text-muted">Structured progression engineered to transition candidates from syntax recall to architecture depth.</p>
+    </div>
+
+    <div class="row g-4">
+      <!-- Python Path -->
+      <div class="col-md-6">
+        <div class="card-custom p-4 h-100 card-hover">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="p-3 rounded-3 bg-info-subtle text-info fs-4">
+              <i class="bi bi-filetype-py"></i>
+            </span>
+            <div>
+              <h4 class="fw-bold mb-0">Python Mastery Track</h4>
+              <small class="text-muted">From fundamentals to CPython internals & asyncio</small>
+            </div>
+          </div>
+          <ul class="list-unstyled d-flex flex-column gap-2 mb-4">
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-primary"></i> <strong>Fundamentals:</strong> Types, mutability, comprehensions, dunder methods, exceptions.
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-primary"></i> <strong>Intermediate:</strong> OOP, decorators, generators, iterators, context managers, GC.
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-primary"></i> <strong>Advanced:</strong> GIL mechanics, multiprocessing, asyncio TaskGroup, descriptors, MRO, SOLID.
+            </li>
+          </ul>
+          <a href="{% url 'quizzes:config' %}?tech=PYTHON" class="btn btn-outline-custom w-100 fw-semibold">
+            Practice Python Questions <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+
+      <!-- Django Path -->
+      <div class="col-md-6">
+        <div class="card-custom p-4 h-100 card-hover">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="p-3 rounded-3 bg-success-subtle text-success fs-4">
+              <i class="bi bi-layers-fill"></i>
+            </span>
+            <div>
+              <h4 class="fw-bold mb-0">Django & Backend Track</h4>
+              <small class="text-muted">From MVT architecture to high-scale database optimization</small>
+            </div>
+          </div>
+          <ul class="list-unstyled d-flex flex-column gap-2 mb-4">
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-success"></i> <strong>Fundamentals:</strong> MVT pattern, routing, views, models, migrations, forms, admin.
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-success"></i> <strong>Intermediate:</strong> QuerySet evaluation, select_related, middleware, CBVs, auth & sessions.
+            </li>
+            <li class="d-flex align-items-center gap-2">
+              <i class="bi bi-check2 text-success"></i> <strong>Advanced:</strong> select_for_update, atomic transactions, caching, Redis, ASGI, security (CSRF/IDOR).
+            </li>
+          </ul>
+          <a href="{% url 'quizzes:config' %}?tech=DJANGO" class="btn btn-outline-custom w-100 fw-semibold">
+            Practice Django Questions <i class="bi bi-arrow-right ms-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quiz Modes Section -->
+  <section class="py-4 mb-5">
+    <div class="card-custom p-4 p-lg-5">
+      <div class="row align-items-center gy-4">
+        <div class="col-lg-6">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1 rounded-pill mb-2">Simulate Real Pressure</span>
+          <h2 class="fw-bold mb-3">Adaptive Quiz Engine & Live Exam Simulator</h2>
+          <p class="text-light mb-4">
+            Whether you want low-stress active recall with instant answers and explanations, or a strictly timed exam simulating real technical hiring screens, Python & Django Interview Master adapts to your study style.
+          </p>
+          <div class="row g-3">
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary">
+                <h6 class="fw-bold text-primary"><i class="bi bi-lightbulb-fill me-1"></i> Practice Mode</h6>
+                <small class="text-muted">Instant correct/incorrect reveals, complete explanations, and retry capability.</small>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary">
+                <h6 class="fw-bold text-danger"><i class="bi bi-stopwatch-fill me-1"></i> Exam Mode</h6>
+                <small class="text-muted">Countdown timer, answers hidden until final submission, auto-submit on timeout.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6 text-center">
+          <div class="p-4 rounded-4 card-custom border-primary shadow text-start">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <span class="fw-bold"><i class="bi bi-lightning-charge text-warning me-1"></i> Quick Start Challenge</span>
+              <span class="badge bg-secondary-subtle text-light">15 Questions</span>
+            </div>
+            <p class="small text-muted mb-4">Test your readiness right now with 15 mixed Python and Django questions across all difficulties.</p>
+            <div class="d-grid gap-2">
+              <form method="POST" action="{% url 'quizzes:start' %}">
+                {% csrf_token %}
+                <input type="hidden" name="mode" value="EXAM">
+                <input type="hidden" name="question_count" value="15">
+                <input type="hidden" name="time_limit_mins" value="15">
+                <button type="submit" class="btn btn-primary-custom w-100 py-2">
+                  <i class="bi bi-play-fill me-1"></i> Launch 15-Minute Technical Exam
+                </button>
+              </form>
+              <a href="{% url 'questions:list' %}" class="btn btn-outline-custom w-100 py-2">
+                <i class="bi bi-search me-1"></i> Explore Full Question Bank
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

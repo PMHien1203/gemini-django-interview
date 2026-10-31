@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Developer Dashboard - Python & Django Interview Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+  <!-- Welcome Banner -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">
+        Welcome back, <span class="text-primary">{{ user.first_name|default:user.username }}</span>!
+      </h2>
+      <p class="text-muted mb-0">
+        Role Target: <span class="badge bg-secondary-subtle text-light">{{ user.profile.get_target_role_display|default:"Python & Django Developer" }}</span>
+        • Experience Level: <span class="badge badge-diff-intermediate">{{ user.profile.get_experience_level_display|default:"Intermediate" }}</span>
+      </p>
+    </div>
+    <div class="d-flex gap-2">
+      <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+        <i class="bi bi-play-circle-fill"></i> New Quiz / Drill
+      </a>
+      <form method="POST" action="{% url 'quizzes:start' %}" class="d-inline">
+        {% csrf_token %}
+        <input type="hidden" name="mode" value="MOCK_INTERVIEW">
+        <input type="hidden" name="question_count" value="20">
+        <input type="hidden" name="time_limit_mins" value="25">
+        <button type="submit" class="btn btn-outline-custom d-flex align-items-center gap-2">
+          <i class="bi bi-briefcase-fill text-warning"></i> Quick Mock Exam
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="row g-3 mb-4">
+    <!-- Questions Completed -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-custom p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-semibold">Questions Completed</span>
+          <span class="p-2 rounded bg-primary-subtle text-primary"><i class="bi bi-check2-all fs-5"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1">{{ analytics.total_questions_completed }}</h3>
+        <small class="text-muted">Total unique answers recorded</small>
+      </div>
+    </div>
+
+    <!-- Tests Taken -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-custom p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-semibold">Tests Completed</span>
+          <span class="p-2 rounded bg-info-subtle text-info"><i class="bi bi-card-checklist fs-5"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1">{{ analytics.total_tests }}</h3>
+        <small class="text-muted">Avg: <strong class="text-primary">{{ analytics.avg_score }}%</strong></small>
+      </div>
+    </div>
+
+    <!-- Highest Score -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-custom p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-semibold">Best Score</span>
+          <span class="p-2 rounded bg-success-subtle text-success"><i class="bi bi-trophy-fill fs-5"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1 {% if analytics.highest_score >= 70 %}text-success{% else %}text-warning{% endif %}">
+          {{ analytics.highest_score }}%
+        </h3>
+        <small class="text-muted">Passing threshold: 70%</small>
+      </div>
+    </div>
+
+    <!-- Learning Streak -->
+    <div class="col-sm-6 col-xl-3">
+      <div class="card-custom p-3 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="text-muted small fw-semibold">Current Streak</span>
+          <span class="p-2 rounded bg-warning-subtle text-warning"><i class="bi bi-fire fs-5"></i></span>
+        </div>
+        <h3 class="fw-bold mb-1 text-warning">{{ analytics.streak }} Days</h3>
+        <small class="text-muted">Keep daily practice active!</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Knowledge Progress Bars (Python vs Django) -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-6">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold"><i class="bi bi-filetype-py text-info me-1"></i> Python Knowledge Accuracy</span>
+          <span class="fw-bold text-info">{{ analytics.py_progress }}%</span>
+        </div>
+        <div class="progress mb-2" style="height: 10px;">
+          <div class="progress-bar bg-info" role="progressbar" style="width: {{ analytics.py_progress }}%;" aria-valuenow="{{ analytics.py_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>{{ analytics.py_correct }} Correct of {{ analytics.py_total }} Answered</span>
+          <a href="{% url 'quizzes:config' %}?tech=PYTHON" class="text-decoration-none">Drill Python <i class="bi bi-chevron-right"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="fw-bold"><i class="bi bi-layers-fill text-success me-1"></i> Django Knowledge Accuracy</span>
+          <span class="fw-bold text-success">{{ analytics.dj_progress }}%</span>
+        </div>
+        <div class="progress mb-2" style="height: 10px;">
+          <div class="progress-bar bg-success" role="progressbar" style="width: {{ analytics.dj_progress }}%;" aria-valuenow="{{ analytics.dj_progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+        <div class="d-flex justify-content-between text-muted small">
+          <span>{{ analytics.dj_correct }} Correct of {{ analytics.dj_total }} Answered</span>
+          <a href="{% url 'quizzes:config' %}?tech=DJANGO" class="text-decoration-none">Drill Django <i class="bi bi-chevron-right"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js Analytics Section -->
+  <div class="row g-4 mb-4">
+    <!-- Score History Chart -->
+    <div class="col-lg-7">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-graph-up text-primary me-2"></i> Score Trend History</h5>
+          <span class="badge bg-secondary-subtle text-muted small">Recent Tests</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          {% if analytics.chart_scores %}
+          <canvas id="scoreHistoryChart"></canvas>
+          {% else %}
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+            <i class="bi bi-bar-chart-line fs-1 mb-2"></i>
+            <p class="mb-2">No completed tests yet.</p>
+            <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom btn-sm">Take Your First Quiz</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Python vs Django Ratio / Topic Accuracy -->
+    <div class="col-lg-5">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-pie-chart text-secondary me-2"></i> Technology Distribution</h5>
+          <span class="badge bg-secondary-subtle text-muted small">Answered Pool</span>
+        </div>
+        <div style="height: 280px; position: relative;">
+          {% if analytics.py_total or analytics.dj_total %}
+          <canvas id="techDoughnutChart"></canvas>
+          {% else %}
+          <div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted">
+            <i class="bi bi-pie-chart fs-1 mb-2"></i>
+            <p class="mb-0">Practice questions to generate distribution.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weakest & Recommended Topics Section -->
+  <div class="row g-4 mb-4">
+    <!-- Weakest Topics -->
+    <div class="col-lg-6">
+      <div class="card-custom p-4 h-100">
+        <h5 class="fw-bold mb-3 text-warning">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> Weakest Topics (Needs Attention)
+        </h5>
+        {% if analytics.weakest_topics %}
+        <div class="d-flex flex-column gap-3">
+          {% for t in analytics.weakest_topics %}
+          <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary d-flex justify-content-between align-items-center">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge {% if t.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %} small">
+                  {{ t.technology }}
+                </span>
+                <span class="fw-bold">{{ t.name }}</span>
+              </div>
+              <small class="text-muted">{{ t.correct }} / {{ t.total }} correct ({{ t.accuracy }}% accuracy)</small>
+            </div>
+            <a href="{% url 'quizzes:config' %}?topic_id={{ t.id }}&mode=PRACTICE" class="btn btn-outline-warning btn-sm">
+              Practice Drill
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-muted small mb-0">No weak topics identified yet. Complete tests to identify target areas.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Recommended Topics to Practice -->
+    <div class="col-lg-6">
+      <div class="card-custom p-4 h-100">
+        <h5 class="fw-bold mb-3 text-primary">
+          <i class="bi bi-star-fill text-warning me-2"></i> Recommended Interview Topics
+        </h5>
+        <div class="d-flex flex-column gap-3">
+          {% for rt in analytics.recommended_topics %}
+          <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary d-flex justify-content-between align-items-center">
+            <div>
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge {% if rt.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %} small">
+                  {{ rt.technology }}
+                </span>
+                <span class="fw-bold">{{ rt.name }}</span>
+              </div>
+              <small class="text-muted">High-frequency interview topic</small>
+            </div>
+            <a href="{% url 'quizzes:config' %}?topic_id={{ rt.id }}" class="btn btn-outline-custom btn-sm">
+              Start Practice
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Test History -->
+  <div class="card-custom p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0"><i class="bi bi-clock-history text-info me-2"></i> Recent Test Attempts</h5>
+      <a href="{% url 'quizzes:history' %}" class="small text-decoration-none">View All History <i class="bi bi-chevron-right"></i></a>
+    </div>
+
+    {% if analytics.recent_attempts %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr class="text-muted small">
+            <th>TEST TITLE</th>
+            <th>MODE</th>
+            <th>DATE</th>
+            <th>SCORE</th>
+            <th>STATUS</th>
+            <th>TIME SPENT</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in analytics.recent_attempts %}
+          <tr>
+            <td class="fw-semibold">{{ a.title }}</td>
+            <td><span class="badge bg-secondary-subtle text-light">{{ a.get_mode_display }}</span></td>
+            <td class="text-muted small">{{ a.completed_at|date:"M d, Y H:i"|default:"Recently" }}</td>
+            <td>
+              <span class="fw-bold {% if a.is_passed %}text-success{% else %}text-danger{% endif %}">
+                {{ a.score }}%
+              </span>
+            </td>
+            <td>
+              {% if a.is_passed %}
+              <span class="badge bg-success-subtle text-success border border-success-subtle">PASSED</span>
+              {% else %}
+              <span class="badge bg-danger-subtle text-danger border border-danger-subtle">NEEDS REVIEW</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ a.formatted_time_spent }}</td>
+            <td>
+              <a href="{% url 'quizzes:result' a.id %}" class="btn btn-outline-custom btn-sm py-1 px-2">
+                Review Details
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="text-muted mb-0">No tests completed yet. Start your first quiz above!</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // 1. Score History Line Chart
+  const scoreLabels = {{ analytics.chart_score_labels|safe }};
+  const scoreData = {{ analytics.chart_scores|safe }};
+
+  const scoreCtx = document.getElementById('scoreHistoryChart');
+  if (scoreCtx && scoreData.length > 0) {
+    new Chart(scoreCtx, {
+      type: 'line',
+      data: {
+        labels: scoreLabels,
+        datasets: [{
+          label: 'Score (%)',
+          data: scoreData,
+          borderColor: '#6366f1',
+          backgroundColor: 'rgba(99, 102, 241, 0.15)',
+          fill: true,
+          tension: 0.35,
+          pointBackgroundColor: '#8b5cf6',
+          pointBorderColor: '#ffffff',
+          pointRadius: 5,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            min: 0,
+            max: 100,
+            ticks: {
+              callback: value => value + '%'
+            },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' }
+          },
+          x: {
+            grid: { display: false }
+          }
+        },
+        plugins: {
+          legend: { display: false }
+        }
+      }
+    });
+  }
+
+  // 2. Tech Distribution Doughnut Chart
+  const techCtx = document.getElementById('techDoughnutChart');
+  if (techCtx) {
+    const pyTotal = {{ analytics.py_total }};
+    const djTotal = {{ analytics.dj_total }};
+    if (pyTotal > 0 || djTotal > 0) {
+      new Chart(techCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Python (' + pyTotal + ')', 'Django (' + djTotal + ')'],
+          datasets: [{
+            data: [pyTotal, djTotal],
+            backgroundColor: ['#38bdf8', '#22c55e'],
+            borderColor: '#1e293b',
+            borderWidth: 2,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { color: '#94a3b8' }
+            }
+          }
+        }
+      });
+    }
+  }
+});
+</script>
+{% endblock %}

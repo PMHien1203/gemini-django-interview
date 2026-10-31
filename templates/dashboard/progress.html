@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Complete Technical Syllabus & Mastery - Interview Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-journal-bookmark-fill text-primary me-2"></i> Technical Syllabus & Mastery</h2>
+      <p class="text-muted mb-0">Track your verified competency across all 95+ Python and Django technical syllabus domains.</p>
+    </div>
+    <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+      <i class="bi bi-play-circle-fill"></i> Custom Drill
+    </a>
+  </div>
+
+  <div class="row g-4">
+    {% for cat_data in categories_with_progress %}
+    <div class="col-lg-6">
+      <div class="card-custom p-4 h-100">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <span class="badge {% if cat_data.category.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %} mb-1">
+              {{ cat_data.category.technology }}
+            </span>
+            <h4 class="fw-bold mb-0">{{ cat_data.category.name }}</h4>
+          </div>
+          <div class="text-end">
+            <span class="fs-5 fw-bold {% if cat_data.accuracy >= 70 %}text-success{% elif cat_data.accuracy > 0 %}text-warning{% else %}text-muted{% endif %}">
+              {{ cat_data.accuracy }}%
+            </span>
+            <div class="small text-muted">Accuracy</div>
+          </div>
+        </div>
+
+        <div class="progress mb-4" style="height: 8px;">
+          <div class="progress-bar {% if cat_data.category.technology == 'PYTHON' %}bg-info{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ cat_data.accuracy }}%;" aria-valuenow="{{ cat_data.accuracy }}" aria-valuemin="0" aria-valuemax="100"></div>
+        </div>
+
+        <h6 class="text-muted small fw-bold mb-2">TOPICS IN THIS MODULE ({{ cat_data.topics|length }})</h6>
+        <div class="d-flex flex-column gap-2" style="max-height: 360px; overflow-y: auto; padding-right: 4px;">
+          {% for t_data in cat_data.topics %}
+          <div class="p-2 px-3 rounded border border-secondary-subtle bg-body-tertiary d-flex justify-content-between align-items-center">
+            <div style="max-width: 65%;">
+              <span class="fw-semibold d-block text-truncate" title="{{ t_data.topic.name }}">{{ t_data.topic.name }}</span>
+              <small class="text-muted">{{ t_data.question_count }} Questions • {{ t_data.attempted }} Attempted ({{ t_data.accuracy }}%)</small>
+            </div>
+            <div>
+              <a href="{% url 'quizzes:config' %}?topic_id={{ t_data.topic.id }}" class="btn btn-outline-custom btn-sm py-1 px-2" title="Practice this topic">
+                <i class="bi bi-play-fill me-1"></i> Drill
+              </a>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

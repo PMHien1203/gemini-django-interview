@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Test History - Python & Django Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-clock-history text-primary me-2"></i> Assessment History</h2>
+      <p class="text-muted mb-0">Review all past quiz sessions, performance trends, and question breakdowns.</p>
+    </div>
+    <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+      <i class="bi bi-play-circle-fill"></i> New Assessment
+    </a>
+  </div>
+
+  <div class="card-custom p-4 shadow-sm mb-4">
+    {% if page_obj %}
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0">
+        <thead>
+          <tr class="text-muted small">
+            <th>#</th>
+            <th>TEST TITLE</th>
+            <th>MODE</th>
+            <th>DATE TAKEN</th>
+            <th>SCORE</th>
+            <th>RESULT</th>
+            <th>ACCURACY</th>
+            <th>TIME SPENT</th>
+            <th>ACTION</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for attempt in page_obj %}
+          <tr>
+            <td class="text-muted small fw-bold">{{ attempt.id }}</td>
+            <td class="fw-semibold">
+              <a href="{% url 'quizzes:result' attempt.id %}" class="text-decoration-none text-light">
+                {{ attempt.title }}
+              </a>
+            </td>
+            <td><span class="badge bg-secondary-subtle text-light">{{ attempt.get_mode_display }}</span></td>
+            <td class="text-muted small">{{ attempt.started_at|date:"M d, Y H:i" }}</td>
+            <td>
+              <span class="fw-bold {% if attempt.is_passed %}text-success{% else %}text-danger{% endif %}">
+                {{ attempt.score }}%
+              </span>
+            </td>
+            <td>
+              {% if attempt.status == 'COMPLETED' %}
+                {% if attempt.is_passed %}
+                <span class="badge bg-success-subtle text-success border border-success-subtle">PASSED</span>
+                {% else %}
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">NEEDS REVIEW</span>
+                {% endif %}
+              {% else %}
+              <span class="badge bg-warning-subtle text-warning border border-warning-subtle">IN PROGRESS</span>
+              {% endif %}
+            </td>
+            <td class="text-muted small">{{ attempt.correct_count }}/{{ attempt.total_questions }}</td>
+            <td class="text-muted small">{{ attempt.formatted_time_spent }}</td>
+            <td>
+              {% if attempt.status == 'COMPLETED' %}
+              <a href="{% url 'quizzes:result' attempt.id %}" class="btn btn-outline-custom btn-sm py-1 px-3">
+                Review <i class="bi bi-chevron-right ms-1"></i>
+              </a>
+              {% else %}
+              <a href="{% url 'quizzes:take' attempt.id %}" class="btn btn-primary-custom btn-sm py-1 px-3">
+                Resume <i class="bi bi-play-fill ms-1"></i>
+              </a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="d-flex justify-content-center mt-4">
+      <ul class="pagination">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo; Prev</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+        {% endif %}
+
+        <li class="page-item active">
+          <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next &raquo;</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-journal-x fs-1 text-muted mb-3"></i>
+      <h4 class="fw-bold">No test attempts recorded yet</h4>
+      <p class="text-muted">Take an assessment or mock interview to begin tracking your mastery.</p>
+      <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom mt-2">Start Assessment</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Configure Interview Quiz - Python & Django Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="card-custom p-4 p-sm-5 shadow-lg">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(99, 102, 241, 0.15);">
+            <i class="bi bi-sliders text-primary fs-3"></i>
+          </div>
+          <h3 class="fw-bold mb-1">Configure Your Technical Assessment</h3>
+          <p class="text-muted small">Customize test mode, difficulty, topic focus, and countdown timers.</p>
+        </div>
+
+        <form method="POST" action="{% url 'quizzes:start' %}">
+          {% csrf_token %}
+
+          <!-- Assessment Mode Selection -->
+          <div class="mb-4">
+            <label class="form-label fw-bold small text-muted">1. SELECT ASSESSMENT MODE</label>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="quiz-option mb-0 h-100 {% if initial_mode == 'EXAM' %}selected{% endif %}">
+                  <input type="radio" name="mode" value="EXAM" class="d-none" {% if initial_mode == 'EXAM' %}checked{% endif %}>
+                  <div class="option-badge"><i class="bi bi-stopwatch"></i></div>
+                  <div>
+                    <div class="fw-bold">Exam Mode (Graded)</div>
+                    <small class="text-muted">Timed test, hidden answers until final submission, calculates performance score.</small>
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-sm-6">
+                <label class="quiz-option mb-0 h-100 {% if initial_mode == 'PRACTICE' %}selected{% endif %}">
+                  <input type="radio" name="mode" value="PRACTICE" class="d-none" {% if initial_mode == 'PRACTICE' %}checked{% endif %}>
+                  <div class="option-badge"><i class="bi bi-lightbulb"></i></div>
+                  <div>
+                    <div class="fw-bold">Practice Mode (Study)</div>
+                    <small class="text-muted">Instant feedback after each question with complete explanations and retries.</small>
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-sm-6">
+                <label class="quiz-option mb-0 h-100 {% if initial_mode == 'MOCK_INTERVIEW' %}selected{% endif %}">
+                  <input type="radio" name="mode" value="MOCK_INTERVIEW" class="d-none" {% if initial_mode == 'MOCK_INTERVIEW' %}checked{% endif %}>
+                  <div class="option-badge"><i class="bi bi-briefcase"></i></div>
+                  <div>
+                    <div class="fw-bold">Full Mock Interview</div>
+                    <small class="text-muted">Mixed Python & Django across all difficulties simulating a live technical screen.</small>
+                  </div>
+                </label>
+              </div>
+
+              <div class="col-sm-6">
+                <label class="quiz-option mb-0 h-100 {% if initial_mode == 'TOPIC_PRACTICE' %}selected{% endif %}">
+                  <input type="radio" name="mode" value="TOPIC_PRACTICE" class="d-none" {% if initial_mode == 'TOPIC_PRACTICE' %}checked{% endif %}>
+                  <div class="option-badge"><i class="bi bi-bullseye"></i></div>
+                  <div>
+                    <div class="fw-bold">Topic Drill</div>
+                    <small class="text-muted">Focus strictly on a single weak or target topic to build deep mastery.</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Technology & Difficulty -->
+          <div class="row g-3 mb-4">
+            <div class="col-md-6">
+              <label for="id_tech" class="form-label fw-bold small text-muted">2. TECHNOLOGY DOMAIN</label>
+              <select name="technology" id="id_tech" class="form-select">
+                <option value="" {% if not initial_tech %}selected{% endif %}>Mixed (Python & Django Combined)</option>
+                <option value="PYTHON" {% if initial_tech == 'PYTHON' %}selected{% endif %}>Python Only (Language, GIL, OOP, Async)</option>
+                <option value="DJANGO" {% if initial_tech == 'DJANGO' %}selected{% endif %}>Django Only (ORM, MVT, Middleware, Security)</option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="id_diff" class="form-label fw-bold small text-muted">3. DIFFICULTY TIER</label>
+              <select name="difficulty" id="id_diff" class="form-select">
+                <option value="ALL" {% if initial_difficulty == 'ALL' %}selected{% endif %}>All Difficulties (Adaptive Mix)</option>
+                <option value="BEGINNER" {% if initial_difficulty == 'BEGINNER' %}selected{% endif %}>Beginner (Core Fundamentals)</option>
+                <option value="INTERMEDIATE" {% if initial_difficulty == 'INTERMEDIATE' %}selected{% endif %}>Intermediate (Professional Practice)</option>
+                <option value="ADVANCED" {% if initial_difficulty == 'ADVANCED' %}selected{% endif %}>Advanced (Senior / Staff Architect)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Topic Selection (Optional) -->
+          <div class="mb-4">
+            <label for="id_topic_id" class="form-label fw-bold small text-muted">4. TARGET SPECIFIC TOPIC (OPTIONAL)</label>
+            <select name="topic_id" id="id_topic_id" class="form-select">
+              <option value="">Any Topic in Selected Domain</option>
+              {% for t in topics %}
+              <option value="{{ t.id }}" {% if initial_topic_id|stringformat:"s" == t.id|stringformat:"s" %}selected{% endif %}>
+                [{{ t.category.technology }}] {{ t.name }} ({{ t.category.name }})
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Question Count & Time Limit -->
+          <div class="row g-3 mb-4">
+            <div class="col-sm-6">
+              <label for="id_q_count" class="form-label fw-bold small text-muted">5. NUMBER OF QUESTIONS</label>
+              <select name="question_count" id="id_q_count" class="form-select">
+                <option value="10">10 Questions (Quick Check)</option>
+                <option value="15" selected>15 Questions (Standard Practice)</option>
+                <option value="20">20 Questions (Standard Interview)</option>
+                <option value="30">30 Questions (Comprehensive Screen)</option>
+                <option value="40">40 Questions (Marathon Drill)</option>
+              </select>
+            </div>
+
+            <div class="col-sm-6">
+              <label for="id_time_limit" class="form-label fw-bold small text-muted">6. TIME LIMIT</label>
+              <select name="time_limit_mins" id="id_time_limit" class="form-select">
+                <option value="10">10 Minutes</option>
+                <option value="15" selected>15 Minutes (1 min / question)</option>
+                <option value="20">20 Minutes</option>
+                <option value="30">30 Minutes</option>
+                <option value="0">Untimed (Practice Mode)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary-custom py-3 fs-5 fw-bold shadow">
+              <i class="bi bi-play-circle-fill me-2"></i> Launch Assessment Session
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener('change', (e) => {
+    document.querySelectorAll('.quiz-option').forEach(card => card.classList.remove('selected'));
+    e.target.closest('.quiz-option').classList.add('selected');
+
+    const timeLimitSelect = document.getElementById('id_time_limit');
+    if (e.target.value === 'PRACTICE' && timeLimitSelect) {
+      timeLimitSelect.value = '0';
+    } else if (e.target.value === 'EXAM' && timeLimitSelect && timeLimitSelect.value === '0') {
+      timeLimitSelect.value = '15';
+    }
+  });
+});
+</script>
+{% endblock %}

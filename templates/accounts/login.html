@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login - Python & Django Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card-custom p-4 p-sm-5 shadow-lg">
+        <div class="text-center mb-4">
+          <div class="d-inline-flex p-3 rounded-circle mb-3" style="background: rgba(99, 102, 241, 0.15);">
+            <i class="bi bi-box-arrow-in-right text-primary fs-3"></i>
+          </div>
+          <h3 class="fw-bold mb-1">Developer Login</h3>
+          <p class="text-muted small">Access your test history, analytics, and interview drills</p>
+        </div>
+
+        <!-- Quick Demo Login Banner -->
+        <div class="p-3 rounded-3 border border-warning-subtle bg-warning-subtle text-warning-emphasis mb-4 text-center">
+          <div class="fw-semibold mb-1"><i class="bi bi-lightning-charge-fill text-warning me-1"></i> Testing or Evaluating?</div>
+          <p class="small text-muted mb-2">Explore the dashboard with pre-seeded questions and test attempts instantly.</p>
+          <a href="{% url 'accounts:demo_login' %}" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">
+            One-Click Demo Login
+          </a>
+        </div>
+
+        <form method="POST" novalidate>
+          {% csrf_token %}
+          <div class="mb-3">
+            <label for="id_username" class="form-label small fw-semibold">Username</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label for="id_password" class="form-label small fw-semibold">Password</label>
+            {{ form.password }}
+            {% if form.password.errors %}
+            <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <button type="submit" class="btn btn-primary-custom w-100 py-2 fw-semibold mb-3">
+            Log In
+          </button>
+        </form>
+
+        <div class="text-center text-muted small">
+          Don't have an account? <a href="{% url 'accounts:register' %}" class="text-primary text-decoration-none fw-semibold">Create an account</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

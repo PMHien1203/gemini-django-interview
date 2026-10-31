@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Question Bank (240+ Questions) - Python & Django Interview Master{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-lg-4">
+  <!-- Header -->
+  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <div>
+      <h2 class="fw-bold mb-1"><i class="bi bi-collection-fill text-primary me-2"></i> Comprehensive Question Bank</h2>
+      <p class="text-muted mb-0">Browse and filter 240+ vetted technical interview questions across Python & Django.</p>
+    </div>
+    <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom d-flex align-items-center gap-2">
+      <i class="bi bi-play-circle-fill"></i> Start Quiz with Filters
+    </a>
+  </div>
+
+  <!-- Filter & Search Toolbar -->
+  <div class="card-custom p-4 mb-4">
+    <form method="GET" action="{% url 'questions:list' %}" class="row g-3">
+      <div class="col-md-3">
+        <label for="id_search" class="form-label small fw-semibold">Search Keywords</label>
+        <div class="input-group">
+          <span class="input-group-text bg-body-tertiary border-secondary-subtle text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" name="q" id="id_search" class="form-control" placeholder="e.g. GIL, select_related, MRO..." value="{{ search_query }}">
+        </div>
+      </div>
+
+      <div class="col-sm-6 col-md-3">
+        <label for="id_tech" class="form-label small fw-semibold">Technology</label>
+        <select name="technology" id="id_tech" class="form-select">
+          <option value="">All Technologies (Python & Django)</option>
+          <option value="PYTHON" {% if selected_tech == 'PYTHON' %}selected{% endif %}>Python Core</option>
+          <option value="DJANGO" {% if selected_tech == 'DJANGO' %}selected{% endif %}>Django Framework</option>
+        </select>
+      </div>
+
+      <div class="col-sm-6 col-md-3">
+        <label for="id_difficulty" class="form-label small fw-semibold">Difficulty Level</label>
+        <select name="difficulty" id="id_difficulty" class="form-select">
+          <option value="">All Difficulties</option>
+          <option value="BEGINNER" {% if selected_difficulty == 'BEGINNER' %}selected{% endif %}>Beginner</option>
+          <option value="INTERMEDIATE" {% if selected_difficulty == 'INTERMEDIATE' %}selected{% endif %}>Intermediate</option>
+          <option value="ADVANCED" {% if selected_difficulty == 'ADVANCED' %}selected{% endif %}>Advanced</option>
+        </select>
+      </div>
+
+      <div class="col-sm-6 col-md-2">
+        <label for="id_topic" class="form-label small fw-semibold">Specific Topic</label>
+        <select name="topic" id="id_topic" class="form-select">
+          <option value="">All Topics</option>
+          {% for t in topics %}
+          <option value="{{ t.id }}" {% if selected_topic == t.id %}selected{% endif %}>{{ t.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-sm-6 col-md-1 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary-custom w-100 py-2" title="Apply Filters">
+          Filter
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Results Summary -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted small">
+      Showing <strong>{{ page_obj.paginator.count }}</strong> questions matching criteria
+    </span>
+    {% if selected_tech or selected_difficulty or search_query or selected_topic %}
+    <a href="{% url 'questions:list' %}" class="btn btn-outline-custom btn-sm py-1 px-2">
+      <i class="bi bi-x-circle me-1"></i> Clear Filters
+    </a>
+    {% endif %}
+  </div>
+
+  <!-- Questions Grid -->
+  <div class="row g-4 mb-4">
+    {% for question in page_obj %}
+    <div class="col-lg-6">
+      <div class="card-custom p-4 h-100 d-flex flex-column justify-content-between card-hover">
+        <div>
+          <!-- Badges -->
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <div class="d-flex gap-2">
+              <span class="badge {% if question.topic.category.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %}">
+                {{ question.topic.category.technology }}
+              </span>
+              <span class="badge bg-secondary-subtle text-light">
+                {{ question.topic.name }}
+              </span>
+            </div>
+            <span class="badge {% if question.difficulty == 'BEGINNER' %}badge-diff-beginner{% elif question.difficulty == 'INTERMEDIATE' %}badge-diff-intermediate{% else %}badge-diff-advanced{% endif %}">
+              {{ question.difficulty }}
+            </span>
+          </div>
+
+          <!-- Question Content -->
+          <h5 class="fw-bold mb-3">{{ question.content }}</h5>
+
+          <!-- Code Snippet -->
+          {% if question.code_snippet %}
+          <div class="code-box mb-3">
+            {{ question.code_snippet }}
+          </div>
+          {% endif %}
+        </div>
+
+        <div>
+          <hr class="border-secondary-subtle my-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="text-muted small">
+              <i class="bi bi-ui-checks me-1"></i> {{ question.options.count }} Options
+            </span>
+            <div class="d-flex gap-2">
+              <a href="{% url 'questions:detail' question.id %}" class="btn btn-outline-custom btn-sm py-1 px-3">
+                Study Question <i class="bi bi-chevron-right ms-1"></i>
+              </a>
+              <a href="{% url 'quizzes:config' %}?topic_id={{ question.topic.id }}&mode=PRACTICE" class="btn btn-primary-custom btn-sm py-1 px-2" title="Practice this topic">
+                <i class="bi bi-play-fill"></i> Drill
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+      <div class="card-custom p-5">
+        <i class="bi bi-search fs-1 text-muted mb-3"></i>
+        <h4 class="fw-bold">No questions found</h4>
+        <p class="text-muted">Try adjusting your keyword search or filter criteria.</p>
+        <a href="{% url 'questions:list' %}" class="btn btn-primary-custom mt-2">Reset All Filters</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+  <nav aria-label="Question Bank pagination" class="d-flex justify-content-center">
+    <ul class="pagination">
+      {% if page_obj.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if selected_tech %}&technology={{ selected_tech }}{% endif %}{% if selected_difficulty %}&difficulty={{ selected_difficulty }}{% endif %}{% if selected_topic %}&topic={{ selected_topic }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+          &laquo; Prev
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">&laquo; Prev</span></li>
+      {% endif %}
+
+      <li class="page-item active">
+        <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      </li>
+
+      {% if page_obj.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if selected_tech %}&technology={{ selected_tech }}{% endif %}{% if selected_difficulty %}&difficulty={{ selected_difficulty }}{% endif %}{% if selected_topic %}&topic={{ selected_topic }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}">
+          Next &raquo;
+        </a>
+      </li>
+      {% else %}
+      <li class="page-item disabled"><span class="page-link">Next &raquo;</span></li>
+      {% endif %}
+    </ul>
+  </nav>
+  {% endif %}
+</div>
+{% endblock %}

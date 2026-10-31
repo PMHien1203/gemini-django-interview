@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Results: {{ attempt.title }} ({{ attempt.score }}%) - Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <!-- Top Score Summary Card -->
+  <div class="card-custom p-4 p-sm-5 shadow-lg mb-4 text-center">
+    <div class="mb-3">
+      {% if attempt.is_passed %}
+      <span class="d-inline-flex p-3 rounded-circle bg-success-subtle text-success fs-1 shadow-sm">
+        <i class="bi bi-award-fill"></i>
+      </span>
+      {% else %}
+      <span class="d-inline-flex p-3 rounded-circle bg-danger-subtle text-danger fs-1 shadow-sm">
+        <i class="bi bi-exclamation-circle-fill"></i>
+      </span>
+      {% endif %}
+    </div>
+
+    <h2 class="fw-bold mb-1">{{ attempt.title }}</h2>
+    <p class="text-muted small mb-4">Completed on {{ attempt.completed_at|date:"M d, Y H:i" }} • Duration: {{ attempt.formatted_time_spent }}</p>
+
+    <!-- Score Big Indicator -->
+    <div class="d-flex justify-content-center align-items-baseline gap-2 mb-3">
+      <span class="display-3 fw-bold {% if attempt.is_passed %}text-success{% else %}text-danger{% endif %}">
+        {{ attempt.score }}%
+      </span>
+      <span class="fs-4 text-muted">/ 100%</span>
+    </div>
+
+    <div class="mb-4">
+      {% if attempt.is_passed %}
+      <span class="badge bg-success-subtle text-success border border-success-subtle fs-6 px-4 py-2 rounded-pill">
+        <i class="bi bi-check-circle-fill me-1"></i> PASSED (Threshold 70%)
+      </span>
+      {% else %}
+      <span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6 px-4 py-2 rounded-pill">
+        <i class="bi bi-x-circle-fill me-1"></i> NEEDS PRACTICE (Threshold 70%)
+      </span>
+      {% endif %}
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="row g-3 justify-content-center" style="max-width: 800px; margin: 0 auto;">
+      <div class="col-6 col-sm-3">
+        <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary">
+          <div class="text-muted small">Total Questions</div>
+          <div class="fs-4 fw-bold">{{ attempt.total_questions }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-3 rounded-3 border border-success-subtle bg-success-subtle">
+          <div class="text-success small">Correct Answers</div>
+          <div class="fs-4 fw-bold text-success">{{ attempt.correct_count }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-3 rounded-3 border border-danger-subtle bg-danger-subtle">
+          <div class="text-danger small">Incorrect Answers</div>
+          <div class="fs-4 fw-bold text-danger">{{ attempt.incorrect_count }}</div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-3">
+        <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary">
+          <div class="text-muted small">Unanswered</div>
+          <div class="fs-4 fw-bold">{{ attempt.unanswered_count }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex flex-wrap justify-content-center gap-3 mt-4">
+      <a href="{% url 'quizzes:config' %}" class="btn btn-primary-custom px-4 py-2">
+        <i class="bi bi-arrow-clockwise me-1"></i> Take Another Quiz
+      </a>
+      <a href="{% url 'progress:dashboard' %}" class="btn btn-outline-custom px-4 py-2">
+        <i class="bi bi-speedometer2 me-1"></i> Go to Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Performance by Topic Breakdown -->
+  {% if topic_breakdown %}
+  <div class="card-custom p-4 mb-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill text-primary me-2"></i> Performance by Topic</h5>
+    <div class="row g-3">
+      {% for item in topic_breakdown %}
+      <div class="col-md-6">
+        <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-bold text-truncate" style="max-width: 70%;">{{ item.topic }}</span>
+            <span class="fw-bold {% if item.mastered %}text-success{% else %}text-warning{% endif %}">
+              {{ item.percentage }}% ({{ item.correct }}/{{ item.total }})
+            </span>
+          </div>
+          <div class="progress" style="height: 6px;">
+            <div class="progress-bar {% if item.mastered %}bg-success{% else %}bg-warning{% endif %}"
+                 style="width: {{ item.percentage }}%;"></div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Detailed Question-by-Question Review -->
+  <h4 class="fw-bold mb-3 mt-4">
+    <i class="bi bi-card-checklist text-info me-2"></i> Comprehensive Question Review & Rationale
+  </h4>
+
+  <div class="d-flex flex-column gap-4">
+    {% for item in detailed_questions %}
+    <div class="card-custom p-4 shadow-sm border-start border-4 {% if item.is_correct %}border-success{% elif item.is_unanswered %}border-secondary{% else %}border-danger{% endif %}">
+      <!-- Question Header -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge bg-secondary-subtle text-light fw-bold">#{{ forloop.counter }}</span>
+          <span class="badge {% if item.question.topic.category.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %}">
+            {{ item.question.topic.category.technology }}
+          </span>
+          <span class="badge bg-secondary-subtle text-light">{{ item.question.topic.name }}</span>
+          <span class="badge {% if item.question.difficulty == 'BEGINNER' %}badge-diff-beginner{% elif item.question.difficulty == 'INTERMEDIATE' %}badge-diff-intermediate{% else %}badge-diff-advanced{% endif %}">
+            {{ item.question.difficulty }}
+          </span>
+        </div>
+        <div>
+          {% if item.is_correct %}
+          <span class="badge bg-success text-white px-3 py-1"><i class="bi bi-check-circle-fill me-1"></i> CORRECT</span>
+          {% elif item.is_unanswered %}
+          <span class="badge bg-secondary text-white px-3 py-1"><i class="bi bi-dash-circle-fill me-1"></i> UNANSWERED</span>
+          {% else %}
+          <span class="badge bg-danger text-white px-3 py-1"><i class="bi bi-x-circle-fill me-1"></i> INCORRECT</span>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Question Text -->
+      <h5 class="fw-bold mb-3">{{ item.question.content }}</h5>
+
+      <!-- Code Snippet -->
+      {% if item.question.code_snippet %}
+      <div class="code-box mb-3">
+        {{ item.question.code_snippet }}
+      </div>
+      {% endif %}
+
+      <!-- Option Review Cards -->
+      <h6 class="text-muted small fw-bold mb-2">OPTIONS REVIEW:</h6>
+      <div class="d-flex flex-column gap-2 mb-3">
+        {% for opt in item.options %}
+        <div class="p-3 rounded-3 border {% if opt.is_correct %}border-success bg-success-subtle text-success-emphasis{% elif opt == item.selected_option and not opt.is_correct %}border-danger bg-danger-subtle text-danger-emphasis{% else %}border-secondary-subtle bg-body-tertiary text-muted{% endif %}">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="d-flex align-items-start gap-2">
+              <span class="fs-5 mt-n1">
+                {% if opt.is_correct %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+                {% elif opt == item.selected_option %}
+                <i class="bi bi-x-circle-fill text-danger"></i>
+                {% else %}
+                <i class="bi bi-circle text-muted"></i>
+                {% endif %}
+              </span>
+              <div>
+                <span class="fw-semibold">{{ opt.content }}</span>
+                {% if opt == item.selected_option %}
+                <span class="badge bg-primary text-white ms-2 small">Your Selection</span>
+                {% endif %}
+                {% if opt.is_correct %}
+                <span class="badge bg-success text-white ms-2 small">Correct Answer</span>
+                {% endif %}
+                {% if opt.explanation %}
+                <small class="d-block text-muted mt-1">{{ opt.explanation }}</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Comprehensive Technical Explanation -->
+      <div class="alert alert-primary-subtle border-primary-subtle p-3 rounded-3 mb-0">
+        <h6 class="fw-bold text-primary mb-1"><i class="bi bi-info-circle-fill me-1"></i> Technical Rationale</h6>
+        <p class="mb-0 small text-light" style="line-height: 1.6;">{{ item.question.explanation }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="text-center mt-5 mb-4">
+    <a href="{% url 'progress:dashboard' %}" class="btn btn-primary-custom px-4 py-2">
+      <i class="bi bi-speedometer2 me-1"></i> Return to Developer Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Developer Profile & Goals - Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row gy-4">
+    <!-- Sidebar summary -->
+    <div class="col-lg-4">
+      <div class="card-custom p-4 text-center">
+        <div class="d-inline-flex p-4 rounded-circle bg-primary text-white fs-1 fw-bold mb-3 shadow" style="width: 90px; height: 90px; align-items: center; justify-content: center;">
+          {{ user.username|make_list|first|upper }}
+        </div>
+        <h4 class="fw-bold mb-1">{{ user.get_full_name|default:user.username }}</h4>
+        <p class="text-muted small mb-3">@{{ user.username }} • Member since {{ user.date_joined|date:"M Y" }}</p>
+
+        <div class="d-flex justify-content-center gap-2 mb-4">
+          <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1">
+            {{ profile.get_target_role_display }}
+          </span>
+          <span class="badge badge-diff-intermediate px-3 py-1">
+            {{ profile.get_experience_level_display }}
+          </span>
+        </div>
+
+        <div class="p-3 rounded-3 border border-secondary-subtle bg-body-tertiary mb-3 text-start">
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Current Streak</span>
+            <span class="fw-bold text-warning"><i class="bi bi-fire"></i> {{ profile.streak_count }} Days</span>
+          </div>
+          <div class="d-flex justify-content-between mb-1">
+            <span class="text-muted small">Tests Completed</span>
+            <span class="fw-bold text-primary">{{ user.quiz_attempts.count }}</span>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted small">Preferred Theme</span>
+            <span class="fw-semibold text-light text-capitalize">{{ profile.preferred_theme }}</span>
+          </div>
+        </div>
+
+        <div class="d-grid gap-2">
+          <a href="{% url 'accounts:change_password' %}" class="btn btn-outline-custom btn-sm py-2">
+            <i class="bi bi-shield-lock me-1"></i> Change Password
+          </a>
+          <a href="{% url 'quizzes:history' %}" class="btn btn-outline-custom btn-sm py-2">
+            <i class="bi bi-clock-history me-1"></i> View Test History
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="col-lg-8">
+      <div class="card-custom p-4 p-sm-5">
+        <h4 class="fw-bold mb-1"><i class="bi bi-gear-fill text-primary me-2"></i> Account Settings & Preferences</h4>
+        <p class="text-muted small mb-4">Customize your target interview role and personal learning profile.</p>
+
+        <form method="POST">
+          {% csrf_token %}
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="id_first_name" class="form-label small fw-semibold">First Name</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-sm-6">
+              <label for="id_last_name" class="form-label small fw-semibold">Last Name</label>
+              {{ form.last_name }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_email" class="form-label small fw-semibold">Email Address</label>
+            {{ form.email }}
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-sm-6">
+              <label for="id_target_role" class="form-label small fw-semibold">Target Interview Role</label>
+              {{ form.target_role }}
+            </div>
+            <div class="col-sm-6">
+              <label for="id_experience_level" class="form-label small fw-semibold">Experience Level</label>
+              {{ form.experience_level }}
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="id_preferred_theme" class="form-label small fw-semibold">UI Theme Preference</label>
+            {{ form.preferred_theme }}
+          </div>
+
+          <div class="mb-4">
+            <label for="id_bio" class="form-label small fw-semibold">Bio / Interview Goals</label>
+            {{ form.bio }}
+          </div>
+
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary-custom px-4 py-2">
+              Save Profile Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

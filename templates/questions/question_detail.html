@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ question.content|truncatechars:60 }} - Interview Master{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{% url 'questions:list' %}" class="text-decoration-none text-muted small">
+      <i class="bi bi-arrow-left me-1"></i> Back to Question Bank
+    </a>
+  </div>
+
+  <div class="row gy-4">
+    <div class="col-lg-8">
+      <div class="card-custom p-4 p-sm-5 shadow-lg mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+          <div class="d-flex gap-2">
+            <span class="badge {% if question.topic.category.technology == 'PYTHON' %}badge-tech-python{% else %}badge-tech-django{% endif %}">
+              {{ question.topic.category.technology }}
+            </span>
+            <span class="badge bg-secondary-subtle text-light">
+              {{ question.topic.name }}
+            </span>
+          </div>
+          <span class="badge {% if question.difficulty == 'BEGINNER' %}badge-diff-beginner{% elif question.difficulty == 'INTERMEDIATE' %}badge-diff-intermediate{% else %}badge-diff-advanced{% endif %}">
+            {{ question.difficulty }}
+          </span>
+        </div>
+
+        <h3 class="fw-bold mb-4">{{ question.content }}</h3>
+
+        {% if question.code_snippet %}
+        <div class="code-box mb-4">
+          {{ question.code_snippet }}
+        </div>
+        {% endif %}
+
+        <h5 class="fw-bold mb-3"><i class="bi bi-ui-checks text-primary me-2"></i> Answer Choices & Rationale</h5>
+        <div class="d-flex flex-column gap-3 mb-4">
+          {% for opt in question.options.all %}
+          <div class="p-3 rounded-3 border {% if opt.is_correct %}border-success bg-success-subtle text-success-emphasis{% else %}border-secondary-subtle bg-body-tertiary{% endif %}">
+            <div class="d-flex align-items-start gap-2">
+              <span class="fs-5 mt-n1">
+                {% if opt.is_correct %}
+                <i class="bi bi-check-circle-fill text-success"></i>
+                {% else %}
+                <i class="bi bi-x-circle text-muted"></i>
+                {% endif %}
+              </span>
+              <div class="w-100">
+                <div class="fw-bold mb-1">{{ opt.content }}</div>
+                {% if opt.explanation %}
+                <small class="text-muted d-block">{{ opt.explanation }}</small>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <div class="alert alert-primary-subtle border-primary-subtle p-4 rounded-3">
+          <h5 class="fw-bold text-primary mb-2"><i class="bi bi-info-circle-fill me-2"></i> Comprehensive Interview Rationale</h5>
+          <p class="mb-0 text-light" style="line-height: 1.6;">{{ question.explanation }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Related Questions / Actions Sidebar -->
+    <div class="col-lg-4">
+      <div class="card-custom p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-lightning-charge text-warning me-2"></i> Practice This Topic</h5>
+        <p class="text-muted small mb-3">Topic: <strong>{{ question.topic.name }}</strong></p>
+        <div class="d-grid gap-2">
+          <a href="{% url 'quizzes:config' %}?topic_id={{ question.topic.id }}&mode=PRACTICE" class="btn btn-primary-custom py-2">
+            Practice Topic (Instant Feedback)
+          </a>
+          <a href="{% url 'quizzes:config' %}?topic_id={{ question.topic.id }}&mode=EXAM" class="btn btn-outline-custom py-2">
+            Timed Topic Exam
+          </a>
+        </div>
+      </div>
+
+      {% if related_questions %}
+      <div class="card-custom p-4">
+        <h6 class="fw-bold text-muted small mb-3">RELATED INTERVIEW QUESTIONS</h6>
+        <div class="d-flex flex-column gap-3">
+          {% for rq in related_questions %}
+          <div class="border-bottom border-secondary-subtle pb-2">
+            <a href="{% url 'questions:detail' rq.id %}" class="fw-semibold text-decoration-none d-block mb-1 text-light">
+              {{ rq.content|truncatechars:70 }}
+            </a>
+            <span class="badge {% if rq.difficulty == 'BEGINNER' %}badge-diff-beginner{% elif rq.difficulty == 'INTERMEDIATE' %}badge-diff-intermediate{% else %}badge-diff-advanced{% endif %} small">
+              {{ rq.difficulty }}
+            </span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

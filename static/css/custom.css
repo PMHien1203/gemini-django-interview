@@ -1,0 +1,275 @@
+/* Python & Django Interview Master - Custom CSS & Theme System */
+
+:root {
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --secondary: #8b5cf6;
+  --bg-main: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-alt: #334155;
+  --border-color: #334155;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-light: #cbd5e1;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+[data-bs-theme="light"] {
+  --bg-main: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #f1f5f9;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #475569;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* Navbar */
+.navbar-custom {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-color);
+  backdrop-filter: blur(8px);
+}
+
+.nav-link {
+  color: var(--text-light);
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: var(--primary) !important;
+}
+
+/* Cards & Surfaces */
+.card-custom {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: 0 15px 30px -8px rgba(99, 102, 241, 0.25);
+}
+
+/* Badges */
+.badge-tech-python {
+  background-color: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.badge-tech-django {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-diff-beginner {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.badge-diff-intermediate {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.badge-diff-advanced {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+/* Buttons */
+.btn-primary-custom {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 0.6rem 1.4rem;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+
+.btn-primary-custom:hover {
+  opacity: 0.95;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.btn-outline-custom {
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  background-color: transparent;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-outline-custom:hover {
+  background-color: var(--bg-surface-alt);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* Code Snippet Display */
+.code-box {
+  background-color: #0b1120;
+  color: #38bdf8;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  padding: 1rem;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+/* Quiz Option Card */
+.quiz-option {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  user-select: none;
+}
+
+.quiz-option:hover {
+  border-color: var(--primary);
+  background-color: rgba(99, 102, 241, 0.05);
+}
+
+.quiz-option.selected {
+  border-color: var(--primary);
+  background-color: rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.quiz-option.correct-reveal {
+  border-color: var(--success) !important;
+  background-color: rgba(34, 197, 94, 0.15) !important;
+}
+
+.quiz-option.incorrect-reveal {
+  border-color: var(--danger) !important;
+  background-color: rgba(239, 68, 68, 0.15) !important;
+}
+
+.option-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-right: 1rem;
+  background-color: var(--bg-surface-alt);
+  color: var(--text-light);
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.quiz-option.selected .option-badge {
+  background-color: var(--primary);
+  color: #ffffff;
+}
+
+/* Question Palette in Take Quiz */
+.palette-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border-radius: 6px;
+  margin: 3px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+}
+
+.palette-btn.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.palette-btn.answered {
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
+}
+
+.palette-btn.flagged {
+  border-color: var(--warning);
+  color: var(--warning);
+  position: relative;
+}
+
+.palette-btn.flagged::after {
+  content: '★';
+  position: absolute;
+  top: -6px;
+  right: -4px;
+  font-size: 10px;
+  color: var(--warning);
+}
+
+/* Progress bar */
+.progress-bar-custom {
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: 6px;
+}
+
+/* Form inputs */
+.form-control, .form-select {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  border-radius: 8px;
+  padding: 0.65rem 0.9rem;
+}
+
+.form-control:focus, .form-select:focus {
+  background-color: var(--bg-surface);
+  border-color: var(--primary);
+  color: var(--text-primary);
+  box-shadow: 0 0 0 0.25rem rgba(99, 102, 241, 0.25);
+}
+
+/* Footer */
+footer {
+  background-color: var(--bg-surface);
+  border-top: 1px solid var(--border-color);
+  padding: 2rem 0;
+  color: var(--text-muted);
+}
